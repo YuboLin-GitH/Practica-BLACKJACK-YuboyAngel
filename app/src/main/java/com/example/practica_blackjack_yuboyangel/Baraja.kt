@@ -1,6 +1,7 @@
 package com.example.practica_blackjack_yuboyangel
 
 import android.content.Context
+import android.util.Log
 
 class Baraja(private val context: Context) {
     private val cartas = mutableListOf<Carta>()
@@ -58,7 +59,9 @@ class Baraja(private val context: Context) {
                 if (resId != 0) {
                     carta.imageResId = resId
                 }
-
+                else {
+                    Log.w("Baraja", "Imagen no encontrada: $nombreArchivo")
+                }
                 cartas.add(carta)
             }
         }

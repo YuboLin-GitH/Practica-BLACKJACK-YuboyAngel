@@ -9,16 +9,14 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.example.practica_blackjack_yuboyangel.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var mibinding: ActivityMainBinding
+
     // 1. Declaración de componentes de la UI
-    private lateinit var layoutCartasCrupier: LinearLayout
-    private lateinit var layoutCartasJugador: LinearLayout
-    private lateinit var tvPuntosJugador: TextView
-    private lateinit var btnPedir: Button
-    private lateinit var btnPlantarse: Button
-    private lateinit var btnReiniciar: Button
+
 
     // 2. Objetos de la lógica del juego
     private lateinit var baraja: Baraja
@@ -27,23 +25,17 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        // Inicializar componentes de la UI
-        layoutCartasCrupier = findViewById(R.id.layoutCartasCrupier)
-        layoutCartasJugador = findViewById(R.id.layoutCartasJugador)
-        tvPuntosJugador = findViewById(R.id.tvPuntosJugador)
-        btnPedir = findViewById(R.id.btnPedir)
-        btnPlantarse = findViewById(R.id.btnPlantarse)
-        btnReiniciar = findViewById(R.id.btnReiniciar)
+        mibinding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(mibinding.root)
 
         // Inicializar la baraja (pasamos 'context' para cargar recursos de imagen)
         baraja = Baraja(this)
 
         // Configurar eventos de los botones (Listeners)
-        btnPedir.setOnClickListener { turnoJugadorPedir() }
-        btnPlantarse.setOnClickListener { turnoCrupier() }
-        btnReiniciar.setOnClickListener { iniciarPartida() }
+
+        mibinding.btnPedir.setOnClickListener { turnoJugadorPedir() }
+        mibinding.btnPlantarse.setOnClickListener { turnoCrupier() }
+        mibinding.btnReiniciar.setOnClickListener { iniciarPartida() }
 
         // Iniciar la primera partida
         iniciarPartida()
@@ -59,11 +51,11 @@ class MainActivity : AppCompatActivity() {
         manoCrupier.limpiar()
 
         // Reiniciar UI
-        layoutCartasCrupier.removeAllViews()
-        layoutCartasJugador.removeAllViews()
-        btnPedir.isEnabled = true
-        btnPlantarse.isEnabled = true
-        btnReiniciar.visibility = View.GONE
+        mibinding.layoutCartasCrupier.removeAllViews()
+        mibinding.layoutCartasJugador.removeAllViews()
+        mibinding.btnPedir.isEnabled = true
+        mibinding.btnPlantarse.isEnabled = true
+        mibinding.btnReiniciar.visibility = View.GONE
 
         // Repartir cartas iniciales: 2 para cada uno
         manoJugador.anadirCarta(baraja.robarCarta()!!)
@@ -96,8 +88,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun turnoCrupier() {
         // 1. El jugador se planta. Deshabilitar botones.
-        btnPedir.isEnabled = false
-        btnPlantarse.isEnabled = false
+        mibinding.btnPedir.isEnabled = false
+        mibinding.btnPlantarse.isEnabled = false
 
         // 2. Lógica del Crupier (CPU): Debe pedir carta si tiene menos de 17 puntos
         while (manoCrupier.calcularPuntuacion() < 17) {
@@ -137,20 +129,20 @@ class MainActivity : AppCompatActivity() {
 
     private fun actualizarUI(mostrarOcultaCrupier: Boolean) {
         // 1. Actualizar zona del jugador
-        layoutCartasJugador.removeAllViews()
+        mibinding.layoutCartasJugador.removeAllViews()
         for (carta in manoJugador.cartas) {
-            agregarCartaALayout(carta, layoutCartasJugador)
+            agregarCartaALayout(carta, mibinding.layoutCartasJugador)
         }
-        tvPuntosJugador.text = "Puntos: ${manoJugador.calcularPuntuacion()}"
+        mibinding.tvPuntosJugador.text = "Puntos: ${manoJugador.calcularPuntuacion()}"
 
         // 2. Actualizar zona del crupier
-        layoutCartasCrupier.removeAllViews()
+        mibinding.layoutCartasCrupier.removeAllViews()
 
         // Lógica para mostrar o ocultar la carta boca abajo
         if (mostrarOcultaCrupier) {
             // Durante el juego: mostrar la primera carta y la segunda oculta (reverso)
             if (manoCrupier.cartas.isNotEmpty()) {
-                agregarCartaALayout(manoCrupier.cartas[0], layoutCartasCrupier) // Carta visible
+                agregarCartaALayout(manoCrupier.cartas[0], mibinding.layoutCartasCrupier) // Carta visible
 
                 // Añadir imagen del reverso para la carta oculta
                 val ivReverso = ImageView(this)
@@ -158,12 +150,12 @@ class MainActivity : AppCompatActivity() {
                 val params = LinearLayout.LayoutParams(200, 300) // Tamaño de la carta
                 params.setMargins(10, 0, 10, 0)
                 ivReverso.layoutParams = params
-                layoutCartasCrupier.addView(ivReverso)
+                mibinding.layoutCartasCrupier.addView(ivReverso)
             }
         } else {
             // Fin del juego: mostrar todas las cartas reales
             for (carta in manoCrupier.cartas) {
-                agregarCartaALayout(carta, layoutCartasCrupier)
+                agregarCartaALayout(carta, mibinding.layoutCartasCrupier)
             }
         }
     }
@@ -187,7 +179,7 @@ class MainActivity : AppCompatActivity() {
 
     // Mostrar diálogo de resultado (AlertDialog)
     private fun mostrarDialogoFin(mensaje: String) {
-        btnReiniciar.visibility = View.VISIBLE // Mostrar botón de reinicio como opción alternativa
+        mibinding.btnReiniciar.visibility = View.VISIBLE // Mostrar botón de reinicio como opción alternativa
 
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Fin de la partida")
