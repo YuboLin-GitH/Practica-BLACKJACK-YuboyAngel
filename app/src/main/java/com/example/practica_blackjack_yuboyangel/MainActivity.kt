@@ -1,11 +1,12 @@
 package com.example.practica_blackjack_yuboyangel
 
+import android.content.Intent
 import android.os.Bundle
+import android.text.InputType
 import android.view.View
-import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -15,61 +16,102 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var mibinding: ActivityMainBinding
 
-    // 1. Declaración de componentes de la UI
-
-
-    // 2. Objetos de la lógica del juego
+    // Objetos de la lógica del juego
     private lateinit var baraja: Baraja
     private val manoJugador = ManoBlackjack()
     private val manoCrupier = ManoBlackjack()
+
+    // Nuevo: Gestor de Apuestas (Delegamos la lógica del dinero aquí)
+    private val gestorApuestas = GestorApuestas()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mibinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(mibinding.root)
 
-        // Inicializar la baraja (pasamos 'context' para cargar recursos de imagen)
         baraja = Baraja(this)
-
-        // Configurar eventos de los botones (Listeners)
 
         mibinding.btnPedir.setOnClickListener { turnoJugadorPedir() }
         mibinding.btnPlantarse.setOnClickListener { turnoCrupier() }
-        mibinding.btnReiniciar.setOnClickListener { iniciarPartida() }
 
-        // Iniciar la primera partida
-        iniciarPartida()
+        // Al reiniciar, mostramos dialogo de apuesta
+        mibinding.btnReiniciar.setOnClickListener { mostrarDialogoApuesta() }
+
+        actualizarTextoDinero()
+        mostrarDialogoApuesta()
     }
 
-    // --- Lógica del flujo del juego ---
+    // --- Lógica de Apuestas ---
+
+    private fun mostrarDialogoApuesta() {
+        // 1. Usar el gestor para comprobar bancarrota
+        if (gestorApuestas.estaEnBancarrota()) {
+            mostrarDialogoGameOver("¡Estás en bancarrota! Fin del juego.")
+            return
+        }
+
+        val input = EditText(this)
+        input.inputType = InputType.TYPE_CLASS_NUMBER
+        input.hint = "Mínimo 10"
+
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Realizar Apuesta")
+        // 2. Leer datos del gestor
+        builder.setMessage("Tienes: ${gestorApuestas.dineroJugador}$\nBanca: ${gestorApuestas.dineroCrupier}$")
+        builder.setView(input)
+        builder.setCancelable(false)
+
+        builder.setPositiveButton("Apostar") { _, _ ->
+            val cantidadStr = input.text.toString()
+            if (cantidadStr.isNotEmpty()) {
+                val cantidad = cantidadStr.toInt()
+
+                // 3. Pedir al gestor que valide la apuesta
+                if (gestorApuestas.realizarApuesta(cantidad)) {
+                    iniciarPartida() // Éxito
+                } else {
+                    Toast.makeText(this, "Apuesta no válida (Fondos insuficientes)", Toast.LENGTH_SHORT).show()
+                    mostrarDialogoApuesta() // Reintentar
+                }
+            } else {
+                mostrarDialogoApuesta()
+            }
+        }
+        builder.show()
+    }
+
+    private fun actualizarTextoDinero() {
+        // 4. Actualizar UI leyendo del gestor
+        mibinding.tvDineroJugador.text = "Dinero: ${gestorApuestas.dineroJugador}$"
+        mibinding.tvDineroCrupier.text = "Banca: ${gestorApuestas.dineroCrupier}$"
+    }
+
+    // --- Lógica del flujo del juego (Igual que antes) ---
 
     private fun iniciarPartida() {
-        // Reiniciar datos
         baraja.reiniciar()
         baraja.barajar()
         manoJugador.limpiar()
         manoCrupier.limpiar()
 
-        // Reiniciar UI
         mibinding.layoutCartasCrupier.removeAllViews()
         mibinding.layoutCartasJugador.removeAllViews()
         mibinding.btnPedir.isEnabled = true
         mibinding.btnPlantarse.isEnabled = true
         mibinding.btnReiniciar.visibility = View.GONE
 
-        // Repartir cartas iniciales: 2 para cada uno
+        actualizarTextoDinero() // Asegurar que se ve la apuesta actual si quisieras mostrarla
+
         manoJugador.anadirCarta(baraja.robarCarta()!!)
         manoCrupier.anadirCarta(baraja.robarCarta()!!)
         manoJugador.anadirCarta(baraja.robarCarta()!!)
         manoCrupier.anadirCarta(baraja.robarCarta()!!)
 
-        // Actualizar la interfaz (mostrando la carta oculta del crupier)
         actualizarUI(mostrarOcultaCrupier = true)
 
-        // Comprobar si hay Blackjack inicial (21 puntos directos)
         if (manoJugador.esBlackjack()) {
             Toast.makeText(this, "¡Blackjack!", Toast.LENGTH_SHORT).show()
-            turnoCrupier() // Pasar directamente a la fase final
+            turnoCrupier()
         }
     }
 
@@ -79,118 +121,142 @@ class MainActivity : AppCompatActivity() {
             manoJugador.anadirCarta(carta)
             actualizarUI(mostrarOcultaCrupier = true)
 
-            // Comprobar si el jugador se ha pasado
             if (manoJugador.seHaPasado()) {
-                finalizarPartida("¡Te has pasado! Gana el Crupier.")
+                // Pasamos quién ganó
+                procesarResultadoFinal("Crupier", "¡Te has pasado! Pierdes.")
             }
         }
     }
 
     private fun turnoCrupier() {
-        // 1. El jugador se planta. Deshabilitar botones.
         mibinding.btnPedir.isEnabled = false
         mibinding.btnPlantarse.isEnabled = false
 
-        // 2. Lógica del Crupier (CPU): Debe pedir carta si tiene menos de 17 puntos
         while (manoCrupier.calcularPuntuacion() < 17) {
             val carta = baraja.robarCarta()
-            if (carta != null) {
-                manoCrupier.anadirCarta(carta)
-            }
+            if (carta != null) manoCrupier.anadirCarta(carta)
         }
 
-        // 3. Revelar todas las cartas del crupier y determinar ganador
         actualizarUI(mostrarOcultaCrupier = false)
         determinarGanador()
     }
 
     private fun determinarGanador() {
-        val puntosJugador = manoJugador.calcularPuntuacion()
-        val puntosCrupier = manoCrupier.calcularPuntuacion()
-
-        var mensaje = ""
+        val ptsJugador = manoJugador.calcularPuntuacion()
+        val ptsCrupier = manoCrupier.calcularPuntuacion()
 
         if (manoJugador.seHaPasado()) {
-            mensaje = "Perdiste. Te pasaste de 21."
+            procesarResultadoFinal("Crupier", "Perdiste. Te pasaste de 21.")
         } else if (manoCrupier.seHaPasado()) {
-            mensaje = "¡Ganaste! El crupier se pasó."
-        } else if (puntosJugador > puntosCrupier) {
-            mensaje = "¡Ganaste! ($puntosJugador vs $puntosCrupier)"
-        } else if (puntosJugador < puntosCrupier) {
-            mensaje = "Perdiste. ($puntosJugador vs $puntosCrupier)"
+            procesarResultadoFinal("Jugador", "¡Ganaste! El crupier se pasó.")
+        } else if (ptsJugador > ptsCrupier) {
+            procesarResultadoFinal("Jugador", "¡Ganaste! ($ptsJugador vs $ptsCrupier)")
+        } else if (ptsJugador < ptsCrupier) {
+            procesarResultadoFinal("Crupier", "Perdiste. ($ptsJugador vs $ptsCrupier)")
         } else {
-            mensaje = "Empate. ($puntosJugador iguales)"
+            procesarResultadoFinal("Empate", "Empate. ($ptsJugador iguales)")
         }
-
-        mostrarDialogoFin(mensaje)
     }
 
-    // --- Métodos auxiliares para la UI ---
+    // --- Procesar dinero y mostrar resultado ---
+    private fun procesarResultadoFinal(ganador: String, mensajeBase: String) {
+        // 5. El gestor calcula el nuevo saldo y nos devuelve el texto del dinero
+        val mensajeDinero = gestorApuestas.procesarResultado(ganador)
+
+        val mensajeFinal = mensajeBase + mensajeDinero
+
+        actualizarTextoDinero()
+        mostrarDialogoFin(mensajeFinal)
+    }
+
+    // --- Métodos auxiliares UI (Sin cambios) ---
 
     private fun actualizarUI(mostrarOcultaCrupier: Boolean) {
-        // 1. Actualizar zona del jugador
         mibinding.layoutCartasJugador.removeAllViews()
-        for (carta in manoJugador.cartas) {
-            agregarCartaALayout(carta, mibinding.layoutCartasJugador)
-        }
+        for (carta in manoJugador.cartas) agregarCartaALayout(carta, mibinding.layoutCartasJugador)
         mibinding.tvPuntosJugador.text = "Puntos: ${manoJugador.calcularPuntuacion()}"
 
-        // 2. Actualizar zona del crupier
         mibinding.layoutCartasCrupier.removeAllViews()
-
-        // Lógica para mostrar o ocultar la carta boca abajo
         if (mostrarOcultaCrupier) {
-            // Durante el juego: mostrar la primera carta y la segunda oculta (reverso)
             if (manoCrupier.cartas.isNotEmpty()) {
-                agregarCartaALayout(manoCrupier.cartas[0], mibinding.layoutCartasCrupier) // Carta visible
-
-                // Añadir imagen del reverso para la carta oculta
+                agregarCartaALayout(manoCrupier.cartas[0], mibinding.layoutCartasCrupier)
                 val ivReverso = ImageView(this)
                 ivReverso.setImageResource(R.drawable.reverso)
-                val params = LinearLayout.LayoutParams(200, 300) // Tamaño de la carta
+                val params = LinearLayout.LayoutParams(200, 300)
                 params.setMargins(10, 0, 10, 0)
                 ivReverso.layoutParams = params
                 mibinding.layoutCartasCrupier.addView(ivReverso)
             }
         } else {
-            // Fin del juego: mostrar todas las cartas reales
-            for (carta in manoCrupier.cartas) {
-                agregarCartaALayout(carta, mibinding.layoutCartasCrupier)
-            }
+            for (carta in manoCrupier.cartas) agregarCartaALayout(carta, mibinding.layoutCartasCrupier)
         }
     }
 
-    // Método para añadir dinámicamente un ImageView al layout
     private fun agregarCartaALayout(carta: Carta, layout: LinearLayout) {
         val iv = ImageView(this)
-        iv.setImageResource(carta.imageResId) // Usar el ID obtenido en la clase Baraja
-
-        // Configurar tamaño de la imagen (200x300 px) y márgenes
+        iv.setImageResource(carta.imageResId)
         val params = LinearLayout.LayoutParams(200, 300)
         params.setMargins(10, 0, 10, 0)
         iv.layoutParams = params
-
         layout.addView(iv)
     }
 
-    private fun finalizarPartida(mensaje: String) {
-        mostrarDialogoFin(mensaje)
-    }
-
-    // Mostrar diálogo de resultado (AlertDialog)
     private fun mostrarDialogoFin(mensaje: String) {
-        mibinding.btnReiniciar.visibility = View.VISIBLE // Mostrar botón de reinicio como opción alternativa
+        // si jugado no tiene dinero
+        if (gestorApuestas.estaEnBancarrota()) {
+            mostrarDialogoGameOver("¡Te has quedado sin dinero!")
+            return
+        }
+
+        // si crupier no tiene dinero
+        if (gestorApuestas.haGanadoAlCrupier()) {
+            mostrarDialogoVictoria()
+            return
+        }
+
+
+        mibinding.btnReiniciar.visibility = View.VISIBLE
 
         val builder = AlertDialog.Builder(this)
-        builder.setTitle("Fin de la partida")
+        builder.setTitle("Fin de la mano")
         builder.setMessage(mensaje)
-        builder.setPositiveButton("Nueva Partida") { _, _ ->
-            iniciarPartida()
+        builder.setPositiveButton("Nueva Apuesta") { _, _ ->
+            mostrarDialogoApuesta()
         }
-        builder.setNegativeButton("Salir") { _, _ ->
-            finish() // Cerrar la app
+        builder.setNegativeButton("Salir al Menú") { _, _ ->
+            val intent = Intent(this, InicioActivity::class.java)
+            startActivity(intent)
+            finish()
         }
-        builder.setCancelable(false) // Evitar cerrar al tocar fuera
+        builder.setCancelable(false)
         builder.show()
+    }
+
+    // has ganado
+    private fun mostrarDialogoVictoria() {
+        AlertDialog.Builder(this)
+            .setTitle("¡FELICIDADES!") // 标题：恭喜
+            .setMessage("¡Has arruinado a la banca!\nTe has llevado todo el dinero: ${gestorApuestas.dineroJugador}$")
+            .setIcon(R.drawable.carta_corazones_a) // 可选：显示一张A作为奖杯 (确保你有这张图)
+            .setPositiveButton("Volver al Menú") { _, _ ->
+                val intent = Intent(this, InicioActivity::class.java)
+                startActivity(intent)
+                finish()
+            }
+            .setCancelable(false)
+            .show()
+    }
+    private fun mostrarDialogoGameOver(mensaje: String) {
+        AlertDialog.Builder(this)
+            .setTitle("GAME OVER")
+            .setMessage(mensaje)
+            .setPositiveButton("Reiniciar Juego") { _, _ ->
+                // 6. Reiniciar lógica en el gestor
+                gestorApuestas.reiniciarJuego()
+                mostrarDialogoApuesta()
+            }
+            .setNegativeButton("Salir") { _, _ -> finish() }
+            .setCancelable(false)
+            .show()
     }
 }

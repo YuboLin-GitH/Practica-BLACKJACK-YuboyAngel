@@ -20,6 +20,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <TextView
+        android:id="@+id/tvDineroCrupier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Dinero: 2000€"
+        android:textColor="#FFD700"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <LinearLayout
         android:id="@+id/layoutCartasCrupier"
         android:layout_width="0dp"
@@ -30,20 +40,26 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvTituloCrupier">
-
-        <ImageView
-            android:layout_width="80dp"
-            android:layout_height="110dp"
-            android:src="@drawable/reverso"
-            android:layout_marginEnd="4dp"/>
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvDineroJugador"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Dinero: 500€"
+        android:textColor="#FFD700"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/layoutCartasJugador"
+        android:layout_marginBottom="8dp"/>
 
     <TextView
         android:id="@+id/tvPuntosJugador"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Puntos: 0"
-        android:textColor="#FFD700"
+        android:textColor="#FFFFFF"
         android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
@@ -107,7 +123,7 @@
         android:id="@+id/btnReiniciar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="NUEVA PARTIDA"
+        android:text="NUEVA APUESTA"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
