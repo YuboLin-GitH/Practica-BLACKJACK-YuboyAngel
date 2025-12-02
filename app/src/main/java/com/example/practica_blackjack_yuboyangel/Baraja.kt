@@ -9,6 +9,10 @@ class Baraja(private val context: Context) {
         reiniciar()
     }
 
+    /**
+     * Reiniciar la baraja: limpia la lista y vuelve a generar las 52 cartas
+     * buscando sus imágenes correspondientes en los recursos (drawable).
+     */
     fun reiniciar() {
         cartas.clear()
 
@@ -16,14 +20,14 @@ class Baraja(private val context: Context) {
             for (r in Rango.values()) {
                 val carta = Carta(p, r)
 
-                // 1. 获取花色名称 (西班牙语, 小写)
-                // 例如: TREBOLES -> "treboles"
+                // 1. Obtener el nombre del palo (en minúsculas)
+                // Ejemplo: TREBOLES -> "treboles"
                 val nombrePalo = p.name.lowercase()
 
-                // 2. 获取数字/字母后缀 (映射逻辑)
-                // 这里把枚举变成了你的文件名格式: "02", "10", "k", "a"
+                // 2. Obtener el sufijo de número/letra (Lógica de mapeo)
+
                 val sufijoNombre = when (r) {
-                    Rango.DOS -> "02"    // 如果你的图片是 "2" 而不是 "02"，这里就删掉 0
+                    Rango.DOS -> "02"
                     Rango.TRES -> "03"
                     Rango.CUATRO -> "04"
                     Rango.CINCO -> "05"
@@ -38,17 +42,19 @@ class Baraja(private val context: Context) {
                     Rango.AS -> "a"
                 }
 
-                // 3. 拼接最终文件名
-                // 结果类似: "carta_treboles_02", "carta_picas_k"
+                // 3. Construir el nombre final del archivo
+                // Resultado ejemplo: "carta_treboles_02", "carta_picas_k"
                 val nombreArchivo = "carta_${nombrePalo}_${sufijoNombre}"
 
-                // 4. 查找资源 ID
+                // 4. Buscar el identificador del recurso (Resource ID)
+                // Busca en la carpeta 'drawable' un archivo que coincida con el nombre generado
                 val resId = context.resources.getIdentifier(
                     nombreArchivo,
                     "drawable",
                     context.packageName
                 )
 
+                // Si se encuentra la imagen (id != 0), se asigna a la carta
                 if (resId != 0) {
                     carta.imageResId = resId
                 }
@@ -58,10 +64,12 @@ class Baraja(private val context: Context) {
         }
     }
 
+    // Barajar las cartas (Mezclar)
     fun barajar() {
         cartas.shuffle()
     }
 
+    // Robar (pedir) una carta del mazo
     fun robarCarta(): Carta? {
         if (cartas.isEmpty()) return null
         return cartas.removeAt(0)

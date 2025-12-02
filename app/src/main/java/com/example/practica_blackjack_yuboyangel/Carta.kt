@@ -37,34 +37,7 @@ data class Carta(val palo: Palo, val rango: Rango, var imageResId: Int = 0) {
  * 4. Clase Baraja
  * Encargada de generar 52 cartas, barajar y repartir
  */
-class Baraja {
-    private val cartas = mutableListOf<Carta>()
 
-    init {
-        reiniciar() // Inicializar
-    }
-
-    // Reiniciar y generar una baraja nueva
-    fun reiniciar() {
-        cartas.clear()
-        for (p in Palo.values()) {
-            for (r in Rango.values()) {
-                cartas.add(Carta(p, r))
-            }
-        }
-    }
-
-    // Barajar
-    fun barajar() {
-        cartas.shuffle()
-    }
-
-    // Robar una carta
-    fun robarCarta(): Carta? {
-        if (cartas.isEmpty()) return null
-        return cartas.removeAt(0)
-    }
-}
 
 /**
  * 5. Clase ManoBlackjack - Lógica principal de la mano
