@@ -1,6 +1,8 @@
 package com.example.practica_blackjack_yuboyangel
 
 import android.content.Intent
+import android.media.MediaPlayer
+import android.media.SoundPool
 import android.os.Bundle
 import android.text.InputType
 import android.view.View
@@ -24,6 +26,20 @@ class MainActivity : AppCompatActivity() {
     // Nuevo: Gestor de Apuestas (Delegamos la lógica del dinero aquí)
     private val gestorApuestas = GestorApuestas()
 
+    private var mediaPlayer: MediaPlayer?=null
+
+    private val soundPool = SoundPool.Builder()
+        .setMaxStreams(5)
+        .build()
+
+    private var sonidoApuestaId: Int = 0
+    private var sonidoPedirId: Int = 0
+
+    private var sonidoGanarId: Int = 0
+
+    private var sonidoPerderId: Int = 0
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mibinding = ActivityMainBinding.inflate(layoutInflater)
@@ -37,8 +53,21 @@ class MainActivity : AppCompatActivity() {
         // Al reiniciar, mostramos dialogo de apuesta
         mibinding.btnReiniciar.setOnClickListener { mostrarDialogoApuesta() }
 
+        // Cargar el sonido de apuesta
+        sonidoApuestaId = soundPool.load(this, R.raw.apuesta, 1)
+
+        // Cargar el sonido de pedir
+        sonidoPedirId = soundPool.load(this, R.raw.pedircarta, 1)
+
+        // Cargar el sonido de perder
+        sonidoPerderId = soundPool.load(this, R.raw.perder, 1)
+
+        // Cargar el sonido de ganar
+        sonidoGanarId = soundPool.load(this, R.raw.ganar, 1)
+
         actualizarTextoDinero()
         mostrarDialogoApuesta()
+        iniciarMusica()
     }
 
     // --- Lógica de Apuestas ---
@@ -68,9 +97,13 @@ class MainActivity : AppCompatActivity() {
 
                 // 3. Pedir al gestor que valide la apuesta
                 if (gestorApuestas.realizarApuesta(cantidad)) {
+
+                    //Reproducir sonido de apuesta
+                    soundPool.play(sonidoApuestaId, 1.0f, 1.0f, 1, 0, 1.0f)
+
                     iniciarPartida() // Éxito
                 } else {
-                    Toast.makeText(this, "Apuesta no válida (Fondos insuficientes)", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Apuesta no válida, minimo 10€ (Fondos insuficientes)", Toast.LENGTH_SHORT).show()
                     mostrarDialogoApuesta() // Reintentar
                 }
             } else {
@@ -80,10 +113,24 @@ class MainActivity : AppCompatActivity() {
         builder.show()
     }
 
+    private fun iniciarMusica(){
+        mediaPlayer = MediaPlayer.create(baseContext, R.raw.musicafondo)
+        mediaPlayer?.setVolume(0.5f,0.5f)
+        mediaPlayer?.start()
+
+    }
+
+    override fun onDestroy(){
+        super.onDestroy()
+        mediaPlayer?.stop()
+        mediaPlayer?.release()
+        mediaPlayer = null
+    }
+
     private fun actualizarTextoDinero() {
         // 4. Actualizar UI leyendo del gestor
         mibinding.tvDineroJugador.text = "Dinero: ${gestorApuestas.dineroJugador}$"
-        mibinding.tvDineroCrupier.text = "Banca: ${gestorApuestas.dineroCrupier}$"
+        mibinding.tvDineroCrupier.text = "Crupier: ${gestorApuestas.dineroCrupier}$"
     }
 
     // --- Lógica del flujo del juego (Igual que antes) ---
@@ -119,6 +166,7 @@ class MainActivity : AppCompatActivity() {
         val carta = baraja.robarCarta()
         if (carta != null) {
             manoJugador.anadirCarta(carta)
+            soundPool.play(sonidoPedirId, 2.0f, 2.0f, 1, 0, 1.0f)
             actualizarUI(mostrarOcultaCrupier = true)
 
             if (manoJugador.seHaPasado()) {
@@ -162,6 +210,12 @@ class MainActivity : AppCompatActivity() {
     private fun procesarResultadoFinal(ganador: String, mensajeBase: String) {
         // 5. El gestor calcula el nuevo saldo y nos devuelve el texto del dinero
         val mensajeDinero = gestorApuestas.procesarResultado(ganador)
+
+        if (ganador=="Jugador"){
+            soundPool.play(sonidoGanarId, 1.0f, 1.0f, 1, 0, 1.0f)
+        }else if (ganador=="Crupier"){
+            soundPool.play(sonidoPerderId, 0.5f, 0.5f, 1, 0, 1.0f)
+        }
 
         val mensajeFinal = mensajeBase + mensajeDinero
 
