@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#1B5E20"
-    android:gravity="center"
     android:orientation="vertical"
     android:padding="16dp">
 
-    <TextView
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"   android:orientation="vertical"
+        android:gravity="center_horizontal|center_vertical"> <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="BLACKJACK"
@@ -16,19 +20,36 @@
         android:textStyle="bold"
         android:layout_marginBottom="32dp"/>
 
-    <ImageView
-        android:layout_width="120dp"
-        android:layout_height="180dp"
-        android:src="@drawable/carta_picas_a"
-        android:layout_marginBottom="48dp"/>
+        <ImageView
+            android:layout_width="120dp"
+            android:layout_height="180dp"
+            android:src="@drawable/carta_picas_a"
+            android:layout_marginBottom="48dp"/>
 
-    <Button
-        android:id="@+id/btnJugar"
-        android:layout_width="200dp"
+        <Button
+            android:id="@+id/btnJugar"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:text="JUGAR"
+            android:textSize="20sp"
+            android:backgroundTint="#FFD700"
+            android:textColor="#000000"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="JUGAR"
-        android:textSize="20sp"
-        android:backgroundTint="#FFD700"
-        android:textColor="#000000"/>
+        android:orientation="horizontal"
+        android:gravity="end">
+        <ImageButton
+        android:id="@+id/btnSonido"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:background="@null"
+        android:scaleType="fitCenter"
+        android:src="@drawable/sonido" />
+
+    </LinearLayout>
 
 </LinearLayout>

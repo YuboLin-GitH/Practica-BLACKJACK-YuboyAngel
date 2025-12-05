@@ -21,7 +21,7 @@ class GestorApuestas {
      * Retorna true si es válida, false si no hay fondos.
      */
     fun realizarApuesta(cantidad: Int): Boolean {
-        if (cantidad > 10 && cantidad <= dineroJugador) {
+        if (cantidad >= 10 && cantidad <= dineroJugador) {
             apuestaActual = cantidad
             return true
         }

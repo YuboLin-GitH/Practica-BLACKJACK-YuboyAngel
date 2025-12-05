@@ -26,13 +26,12 @@ class MainActivity : AppCompatActivity() {
     // Nuevo: Gestor de Apuestas (Delegamos la lógica del dinero aquí)
     private val gestorApuestas = GestorApuestas()
 
-    private var mediaPlayer: MediaPlayer?=null
-
     private val soundPool = SoundPool.Builder()
         .setMaxStreams(5)
         .build()
 
     private var sonidoApuestaId: Int = 0
+
     private var sonidoPedirId: Int = 0
 
     private var sonidoGanarId: Int = 0
@@ -67,7 +66,6 @@ class MainActivity : AppCompatActivity() {
 
         actualizarTextoDinero()
         mostrarDialogoApuesta()
-        iniciarMusica()
     }
 
     // --- Lógica de Apuestas ---
@@ -113,18 +111,9 @@ class MainActivity : AppCompatActivity() {
         builder.show()
     }
 
-    private fun iniciarMusica(){
-        mediaPlayer = MediaPlayer.create(baseContext, R.raw.musicafondo)
-        mediaPlayer?.setVolume(0.5f,0.5f)
-        mediaPlayer?.start()
-
-    }
-
     override fun onDestroy(){
         super.onDestroy()
-        mediaPlayer?.stop()
-        mediaPlayer?.release()
-        mediaPlayer = null
+        soundPool.release()
     }
 
     private fun actualizarTextoDinero() {
