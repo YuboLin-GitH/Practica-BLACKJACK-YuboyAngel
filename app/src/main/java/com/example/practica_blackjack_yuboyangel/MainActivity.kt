@@ -122,7 +122,6 @@ class MainActivity : AppCompatActivity() {
         mibinding.tvDineroCrupier.text = "Crupier: ${gestorApuestas.dineroCrupier}$"
     }
 
-    // --- Lógica del flujo del juego (Igual que antes) ---
 
     private fun iniciarPartida() {
         baraja.reiniciar()
@@ -212,7 +211,6 @@ class MainActivity : AppCompatActivity() {
         mostrarDialogoFin(mensajeFinal)
     }
 
-    // --- Métodos auxiliares UI (Sin cambios) ---
 
     private fun actualizarUI(mostrarOcultaCrupier: Boolean) {
         mibinding.layoutCartasJugador.removeAllViews()
