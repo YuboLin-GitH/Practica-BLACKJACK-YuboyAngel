@@ -276,9 +276,9 @@ class MainActivity : AppCompatActivity() {
     // has ganado
     private fun mostrarDialogoVictoria() {
         AlertDialog.Builder(this)
-            .setTitle("¡FELICIDADES!") // 标题：恭喜
+            .setTitle("¡FELICIDADES!")
             .setMessage("¡Has arruinado a la banca!\nTe has llevado todo el dinero: ${gestorApuestas.dineroJugador}$")
-            .setIcon(R.drawable.carta_corazones_a) // 可选：显示一张A作为奖杯 (确保你有这张图)
+            .setIcon(R.drawable.carta_corazones_a)
             .setPositiveButton("Volver al Menú") { _, _ ->
                 val intent = Intent(this, InicioActivity::class.java)
                 startActivity(intent)
