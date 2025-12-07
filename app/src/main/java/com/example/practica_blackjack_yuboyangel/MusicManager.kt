@@ -3,6 +3,13 @@ package com.example.practica_blackjack_yuboyangel
 import android.content.Context
 import android.media.MediaPlayer
 
+/**
+ * clase que está diseñada para tener una única instancia (un solo objeto)
+ * en toda la vida de la aplicación y proporcionar un punto de acceso global a ella.
+ * Se crea un objeto que "vive" por encima de las actividades, de esta manera ambas activities
+ * interactuan con el mismo objeto, garantizando que el estado de mute persista incluso al destruirse
+ * la actividad
+ */
 object MusicManager {
 
     // El MediaPlayer es nullable y persistirá mientras la app esté abierta.
@@ -15,7 +22,6 @@ object MusicManager {
     private const val VOLUME_ON = 1.0f
     private const val VOLUME_OFF = 0.0f
 
-    // Asume que tienes estos recursos en res/drawable
     private val ICON_ON = R.drawable.sonido
     private val ICON_OFF = R.drawable.nosonido
 
