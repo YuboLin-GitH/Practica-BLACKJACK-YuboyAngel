@@ -122,6 +122,7 @@ class MainActivity : AppCompatActivity() {
         mibinding.tvDineroCrupier.text = "Crupier: ${gestorApuestas.dineroCrupier}$"
     }
 
+    // --- Lógica del flujo del juego (Igual que antes) ---
 
     private fun iniciarPartida() {
         baraja.reiniciar()
@@ -211,6 +212,7 @@ class MainActivity : AppCompatActivity() {
         mostrarDialogoFin(mensajeFinal)
     }
 
+    // --- Métodos auxiliares UI (Sin cambios) ---
 
     private fun actualizarUI(mostrarOcultaCrupier: Boolean) {
         mibinding.layoutCartasJugador.removeAllViews()
@@ -276,9 +278,9 @@ class MainActivity : AppCompatActivity() {
     // has ganado
     private fun mostrarDialogoVictoria() {
         AlertDialog.Builder(this)
-            .setTitle("¡FELICIDADES!")
+            .setTitle("¡FELICIDADES!") // 标题：恭喜
             .setMessage("¡Has arruinado a la banca!\nTe has llevado todo el dinero: ${gestorApuestas.dineroJugador}$")
-            .setIcon(R.drawable.carta_corazones_a)
+            .setIcon(R.drawable.carta_corazones_a) // 可选：显示一张A作为奖杯 (确保你有这张图)
             .setPositiveButton("Volver al Menú") { _, _ ->
                 val intent = Intent(this, InicioActivity::class.java)
                 startActivity(intent)
