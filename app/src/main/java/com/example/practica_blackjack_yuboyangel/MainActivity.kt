@@ -84,7 +84,7 @@ class MainActivity : AppCompatActivity() {
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Realizar Apuesta")
         // 2. Leer datos del gestor
-        builder.setMessage("Tienes: ${gestorApuestas.dineroJugador}$\nBanca: ${gestorApuestas.dineroCrupier}$")
+        builder.setMessage("Tienes: ${gestorApuestas.dineroJugador}$\nCrupier: ${gestorApuestas.dineroCrupier}$")
         builder.setView(input)
         builder.setCancelable(false)
 
